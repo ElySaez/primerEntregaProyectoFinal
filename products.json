@@ -1,0 +1,57 @@
+[
+	{
+		"title": "Ventilador",
+		"description": "metal",
+		"category": "Hogar",
+		"price": "150000",
+		"status": true,
+		"thumbnail": "uploads\\1672234483769-2020-ABR-AIRON-FOTOS-PRODUCTOS-GFM-50-1.jpg",
+		"code": "44",
+		"stock": "15",
+		"id": 3
+	},
+	{
+		"title": "Sillón",
+		"description": "colores",
+		"category": "Deco Hogar",
+		"price": "200000",
+		"status": true,
+		"thumbnail": "uploads\\1672234687017-CORAZON-DIA-1.jpg",
+		"code": "789",
+		"stock": "3",
+		"id": 5
+	},
+	{
+		"title": "Lavadora",
+		"description": "Lg",
+		"category": "Linea Blanca",
+		"price": "635000",
+		"status": true,
+		"thumbnail": "uploads\\1672234860886-LG-ThinQ-_-AI-DD.jpg",
+		"code": "4444",
+		"stock": "6",
+		"id": 6
+	},
+	{
+		"title": "Alfombra",
+		"description": "Colores",
+		"category": "Deco Hogar",
+		"price": "150000",
+		"status": true,
+		"thumbnail": "uploads\\1672258792146-19648737.jpg",
+		"code": "454",
+		"stock": "12",
+		"id": 7
+	},
+	{
+		"title": "Aspiradora",
+		"description": "Amarillo",
+		"category": "Hogar",
+		"price": "52000",
+		"status": true,
+		"thumbnail": "uploads\\1672258847265-aspiradoras-alemana.jpg",
+		"code": "5893",
+		"stock": "42",
+		"id": 8
+	}
+]

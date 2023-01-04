@@ -1,49 +1,140 @@
-import fs from 'fs'
+const fs = require('fs');
 
-class CartManager {
-  constructor(path) {
-    this.path = path
-    fs.existsSync(this.path) ? this.cart = JSON.parse(fs.readFileSync(this.path, 'utf-8')) : this.cart = [];
-  }
+class CartManager{
 
-  async createCart() {
-    let carrito = {
-      "products": []
+    constructor(path){
+        this.path = path;
+    };
+
+    async getAll(){
+        try{
+            if(fs.existsSync(this.path, 'utf8')){
+                let products = await fs.promises.readFile(this.path, 'utf-8');
+                return JSON.parse(products);
+            }else{
+                return [];
+            }
+
+        }catch(error){
+            console.log(error);
+        }
+    };
+
+    async save(data){
+        try{
+            let products = await this.getAll();
+            if (products.length === 0) {
+                data['id'] = 1;
+            }else{
+                data['id'] = products[products.length - 1]['id'] + 1;  
+            }            
+            products.push(data);
+            await fs.promises.writeFile(this.path, JSON.stringify(products, null, '\t'));
+            return data.id;
+        }catch(error){
+            console.log(error);
+        }
+    };
+
+    async getById(id){
+        try{
+            let products = await this.getAll();
+            let myProduct = products.find((product) => product.id == id);
+            if(myProduct != null){
+                return myProduct;
+            }else{
+                console.log('Not found');
+                return null;
+            }
+        }catch(error){
+            console.log(error);
+        }
+    };
+
+    async updateProducts(data){
+        try{
+            let carts = await this.getAll();
+            let myCart = carts.find((cart) => cart.id === data.id);
+            if(myCart != null){
+                myCart.products = data.products;
+                myCart.quantity = data.quantity;
+                await fs.promises.writeFile(this.path, JSON.stringify(carts, null, '\t'));
+            }
+        } catch(error){
+            console.log(error);
+        }
+    };
+
+    async deleteById(id){
+        try{
+            let products = await this.getAll();
+            let myProduct = products.find(product => product['id'] === id);
+            if(myProduct!= null){
+                products.splice(products.indexOf(myProduct), 1);
+                await fs.promises.writeFile(this.path, JSON.stringify(products, null, '\t'));
+            }
+        }catch(error){
+            console.log(error);
+        }
+    };
+
+    async productExists(idProd){
+        try{
+            if(fs.existsSync('./products.json')){
+                const dataProducts = JSON.parse(await fs.promises.readFile('./products.json','utf-8'));
+                let product = null;
+                if(dataProducts.length>0){
+                    product = dataProducts.find((produ) => produ.id === parseInt(idProd));
+                }
+                if (product != null){
+                    return true;
+                }
+                return false;
+            }
+        }catch(err){
+            console.log(err);
+        }
     }
+};
 
-    this.cart.length === 0 ? carrito["id"] = 1 : carrito["id"] = this.cart[this.cart.length - 1]["id"] + 1
-    this.cart.push(carrito)
-    await fs.promises.writeFile(this.path, JSON.stringify(this.cart, null, '\t'))
+let container = new CartManager('./carrito.json');
 
+const createCart = (req, res) => {
+    container.getAll().then(() =>{
+        const newCarrito = {
+            products: [],
+        }
+        container.save(newCarrito).then(cid => container.getById(cid).then(myShopping => res.json(myShopping)));
+    });
+};
 
-  }
+const showProducts = (req, res) => {
+    let { cid } = req.params;
+    container.getById(parseInt(cid)).then(myShopping => res.json(myShopping.products));
+};
 
-  async addToCart(CartId, ProductId, quantity) {
-    let i = this.cart.findIndex(carrito => carrito.id === CartId)
-    if (i === -1 || this.cart[i]["products"] === undefined) return false;
-    let iProduct = this.cart[i]["products"].findIndex(pid => pid.productId === ProductId)
-    let Exist = this.cart[i]["products"].some(pid => pid.productId === ProductId)
+const addProduct = (req, res) => {
+    let { cid, pid } = req.params;
+    container.productExists(pid).then((exist) => {
+        if(exist){
+            let cant = 1;
+            let myProduct ={
+                idProd: pid,
+                quantity: cant,
+            };
+            container.getById(parseInt(cid)).then((myShopping) => {
+                let product = myShopping.products.find((prod) => prod.idProd === pid);
+                if (product != null) {
+                    product.quantity ++;
+                }else{
+                    myShopping.products.push(myProduct);
+                }
+                container.updateProducts(myShopping).then((() => container.getById(cid))).then(myShopping => res.json(myShopping.products));
 
+            });
+        };
+    })
+    container.getById(cid).then(myShopping => res.json(myShopping.products));
+};
 
-     if (Exist) {
-      this.cart[i]["products"][iProduct]["quantity"] += quantity;
-    } else {
-      this.cart[i]["products"].push({ "productId": ProductId, "quantity": quantity })
-    }
-    
-
-    await fs.promises.writeFile(this.path, JSON.stringify(this.cart, null, '\t'))
-    return true;
-
-  }
-
-
-  getCart = (id) => {
-    let carrito = this.cart.find(element => element.id === id)
-    return carrito || false
-  }
-
-}
-
-
-export default new CartManager('./carrito.json')
+module.exports = { createCart, showProducts, addProduct }; 
